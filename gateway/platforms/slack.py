@@ -120,6 +120,7 @@ class SlackAdapter(BasePlatformAdapter):
             logger.error(
                 "[Slack] slack-bolt not installed. Run: pip install slack-bolt",
             )
+            self._set_fatal_error("MISSING_DEPENDENCY", "slack-bolt not installed", retryable=False)
             return False
 
         raw_token = self.config.token
@@ -127,9 +128,11 @@ class SlackAdapter(BasePlatformAdapter):
 
         if not raw_token:
             logger.error("[Slack] SLACK_BOT_TOKEN not set")
+            self._set_fatal_error("MISSING_TOKEN", "SLACK_BOT_TOKEN not set", retryable=False)
             return False
         if not app_token:
             logger.error("[Slack] SLACK_APP_TOKEN not set")
+            self._set_fatal_error("MISSING_TOKEN", "SLACK_APP_TOKEN not set", retryable=False)
             return False
 
         # Support comma-separated bot tokens for multi-workspace
