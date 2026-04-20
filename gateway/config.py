@@ -156,12 +156,17 @@ class PlatformConfig:
     
     # Platform-specific settings
     extra: Dict[str, Any] = field(default_factory=dict)
+
+    # Max reconnect attempts before giving up on a failed platform.
+    # Set to 0 to retry forever. Defaults to 20.
+    max_retry_attempts: int = 20
     
     def to_dict(self) -> Dict[str, Any]:
         result = {
             "enabled": self.enabled,
             "extra": self.extra,
             "reply_to_mode": self.reply_to_mode,
+            "max_retry_attempts": self.max_retry_attempts,
         }
         if self.token:
             result["token"] = self.token
@@ -170,13 +175,13 @@ class PlatformConfig:
         if self.home_channel:
             result["home_channel"] = self.home_channel.to_dict()
         return result
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PlatformConfig":
         home_channel = None
         if "home_channel" in data:
             home_channel = HomeChannel.from_dict(data["home_channel"])
-        
+
         return cls(
             enabled=data.get("enabled", False),
             token=data.get("token"),
@@ -184,6 +189,7 @@ class PlatformConfig:
             home_channel=home_channel,
             reply_to_mode=data.get("reply_to_mode", "first"),
             extra=data.get("extra", {}),
+            max_retry_attempts=data.get("max_retry_attempts", 20),
         )
 
 

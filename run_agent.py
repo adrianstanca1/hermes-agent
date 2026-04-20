@@ -11376,7 +11376,7 @@ class AIAgent:
                         _turn_exit_reason = "empty_response_exhausted"
                         reasoning_text = self._extract_reasoning(assistant_message)
                         assistant_msg = self._build_assistant_message(assistant_message, finish_reason)
-                        assistant_msg["content"] = "(empty)"
+                        assistant_msg["content"] = "I encountered an internal error. Retrying or switching model may resolve this."
                         messages.append(assistant_msg)
 
                         if reasoning_text:
