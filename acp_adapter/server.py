@@ -27,7 +27,6 @@ from acp.schema import (
     McpServerHttp,
     McpServerSse,
     McpServerStdio,
-    ModelInfo,
     NewSessionResponse,
     PromptResponse,
     ResumeSessionResponse,
@@ -51,6 +50,18 @@ try:
     from acp.schema import AuthMethodAgent
 except ImportError:
     from acp.schema import AuthMethod as AuthMethodAgent  # type: ignore[attr-defined]
+
+# ModelInfo was removed from acp.schema in a newer agent-client-protocol release.
+# Fall back to a minimal local definition with the fields this adapter uses.
+try:
+    from acp.schema import ModelInfo
+except ImportError:
+    from pydantic import BaseModel
+
+    class ModelInfo(BaseModel):  # type: ignore[no-redef]
+        model_id: str
+        name: str
+        description: str = ""
 
 from acp_adapter.auth import detect_provider
 from acp_adapter.events import (
