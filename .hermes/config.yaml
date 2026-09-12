@@ -5,12 +5,15 @@ model:
   aliases:
     l1: llama3.1:8b
     l2: gemma2:27b
-    l3: hermes3:latest
+    l3: openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
     l4: openrouter/free
     code-free: openrouter/cohere/north-mini-code:free
     reasoning-free: openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
     gemma-free: openrouter/google/gemma-4-26b-a4b-it:free
     auto-free: openrouter/free
+fallback_providers:
+  provider: openrouter
+  model: nvidia/nemotron-3-ultra-550b-a55b:free
 database:
   journal_mode: wal
 runtime:
@@ -99,15 +102,21 @@ memory:
   user_char_limit: 1375
   nudge_interval: 10
 delegation:
-  max_iterations: 250
   model: openrouter/free
   provider: openrouter
-  max_concurrent_children: 4
   base_url: https://openrouter.ai/api/v1
+  max_iterations: 250
+  max_concurrent_children: 4
 skills:
   creation_nudge_interval: 15
+approvals:
+  destructive_slash_confirm: false
 command_allowlist:
+  - stop/restart system service
+  - script execution via -e/-c flag
   - script execution via heredoc
+  - overwrite system file via redirection
+  - delete in root path
 cron:
   catch_up_missed: true
 kanban:
@@ -172,7 +181,9 @@ platform_toolsets:
     - a2a
     - browser
     - clarify
+    - claude-code
     - code_execution
+    - codex
     - computer_use
     - connections
     - context_engine
@@ -180,9 +191,12 @@ platform_toolsets:
     - delegation
     - file
     - image_gen
+    - kanban
     - memory
+    - opencode
     - session_search
     - skills
+    - stt
     - terminal
     - todo
     - tts
@@ -190,9 +204,6 @@ platform_toolsets:
     - video_gen
     - vision
     - web
-    - claude-code
-    - codex
-    - opencode
   telegram:
     - hermes-telegram
   discord:
@@ -249,8 +260,12 @@ known_builtin_toolsets:
 fallback_model:
   provider: openrouter
   model: anthropic/claude-sonnet-4
-fallback_providers:
-  provider: openrouter
-  model: nvidia/nemotron-3-ultra-550b-a55b:free
-approvals:
-  destructive_slash_confirm: false
+platforms:
+  telegram:
+    enabled: true
+    allowed_users: 5900448653
+    home_channel:
+      platform: telegram
+      chat_id: '5900448653'
+      name: Xulesxu Adrian
+      user_id: '5900448653'
