@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentOS WebEdition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&display=swap');
+        body { font-family: 'Fira Code', monospace; background: #050505; color: #00ff41; overflow: hidden; height: 100vh; }
+        .window { position: absolute; min-width: 300px; min-height: 200px; background: rgba(15, 15, 15, 0.95); border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; z-index: 10; }
+        .window-header { background: #1a1a1a; padding: 8px 12px; cursor: move; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; border-radius: 8px 8px 0 0; }
+        .window-content { flex: 1; overflow: auto; padding: 15px; }
+        .taskbar { position: fixed; bottom: 0; left: 0; right: 0; height: 48px; background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border-top: 1px solid #333; display: flex; align-items: center; padding: 0 15px; z-index: 100; }
+        .app-icon { width: 32px; height: 32px; background: #222; border: 1px solid #444; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .app-icon:hover { background: #333; border-color: #00ff41; box-shadow: 0 0 10px rgba(0,255,65,0.3); }
+        .terminal { background: black; color: #00ff41; font-size: 12px; line-height: 1.5; }
+        .glass { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <!-- Desktop Area -->
+    <div id="desktop" class="relative w-full h-full"></div>
+
+    <!-- Taskbar -->
+    <div class="taskbar space-x-4">
+        <div class="app-icon" onclick="openApp('terminal')" title="Terminal">🐚</div>
+        <div class="app-icon" onclick="openApp('explorer')" title="Explorer">📁</div>
+        <div class="app-icon" onclick="openApp('swarm')" title="Swarm Control">🐝</div>
+        <div class="app-icon" onclick="openApp('monitor')" title="System Monitor">📊</div>
+        <div class="flex-1"></div>
+        <div id="clock" class="text-xs text-gray-500 mr-4">00:00:00</div>
+    </div>
+
+    <script>
+        const desktop = document.getElementById('desktop');
+        let zIndexCounter = 100;
+
+        const apps = {
+            terminal: { title: 'System Terminal', content: '<div class="terminal h-full p-2" id="term-out">Connecting to kernel...</div>' },
+            explorer: { title: 'File Explorer', content: '<div id="file-list" class="grid grid-cols-3 gap-4">Loading files...</div>' },
+            swarm: { title: 'Swarm Control', content: `
+                <div class="space-y-4">
+                    <textarea id="goal-input" class="w-full bg-black border border-gray-800 p-2 text-sm text-green-400 focus:outline-none" placeholder="Mission objective..."></textarea>
+                    <button onclick="deployGoal()" class="w-full bg-green-600 text-black text-xs font-bold py-2 rounded uppercase">Deploy Agent</button>
+                    <div id="swarm-status" class="text-xs text-gray-500 italic">Waiting for deployment...</div>
+                </div>` },
+            monitor: { title: 'System Health', content: '<div class="space-y-2 text-xs"><div id="cpu">CPU: --</div><div id="ram">RAM: --</div><div id="zram">ZRAM: --</div></div>' }
+        };
+
+        function openApp(appId) {
+            if (document.getElementById(`win-${appId}`)) return;
+            const app = apps[appId];
+            const win = document.createElement('div');
+            win.id = `win-${appId}`;
+            win.className = 'window';
+            win.style.left = (50 + (zIndexCounter % 10) * 20) + 'px';
+            win.style.top = (50 + (zIndexCounter % 10) * 20) + 'px';
+            win.style.zIndex = ++zIndexCounter;
+            
+            win.innerHTML = `
+                <div class="window-header" onmousedown="dragStart(event, '${appId}')">
+                    <span class="text-xs font-bold text-gray-400">${app, appId}</span>
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full cursor-pointer"></div>
+                        <div class="w-3 h-3 bg-red-500 rounded-full cursor-pointer" onclick="closeApp('${appId}')"></div>
+                    </div>
+                </div>
+                <div class="window-content">${app.content}</div>
+            `;
+            desktop.appendChild(win);
+            if(appId === 'terminal') startTerminal();
+            if(appId === 'explorer') loadFiles();
+            if(appId === 'monitor') startMonitor();
+        }
+
+        function closeApp(id) { document.getElementById(`win-${id}`).remove(); }
+
+        // Simple Window Dragging
+        let activeWin = null;
+        function dragStart(e, id) {
+            activeWin = document.getElementById(`win-${id}`);
+            activeWin.style.zIndex = ++zIndexCounter;
+            const startX = e.clientX - activeWin.offsetLeft;
+            const startY = e.clientY - activeWin.offsetTop;
+            
+            const move = (e) => {
+                activeWin.style.left = (e.clientX - startX) + 'px';
+                activeWin.style.top = (e.clientY - startY) + 'px';
+            };
+            const stop = () => {
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', stop);
+            };
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', stop);
+        }
+
+        // API Integrations
+        async function startTerminal() {
+            const out = document.getElementById('term-out');
+            setInterval(async () => {
+                const res = await fetch('/logs');
+                const data = await res.json();
+                out.innerHTML = data.logs.join('<br>');
+                out.scrollTop = out.scrollHeight;
+            }, 2000);
+        }
+
+        async function loadFiles() {
+            const list = document.getElementById('file-list');
+            const res = await fetch('/api/files');
+            const files = await res.json();
+            list.innerHTML = files.map(f => `
+                <div class="p-2 border border-gray-800 rounded bg-black text-center cursor-pointer hover:border-green-500 text-xs">
+                    📄 ${f}
+                </div>`).join('');
+        }
+
+        async function deployGoal() {
+            const goal = document.getElementById('goal-input').value;
+            const status = document.getElementById('swarm-status');
+            status.innerText = 'Deploying swarm...';
+            const res = await fetch('/execute', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ goal })
+            });
+            const data = await res.json();
+            status.innerText = 'Success: ' + data.result;
+        }
+
+        async function startMonitor() {
+            setInterval(async () => {
+                const res = await fetch('/health');
+                const data = await res.json();
+                document.getElementById('cpu').innerText = 'CPU: Online';
+                document.getElementById('ram').innerText = 'RAM: Stable';
+                document.getElementById('zram').innerText = 'ZRAM: Active';
+            }, 5000);
+        }
+
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    </script>
+</body>
+</html>
