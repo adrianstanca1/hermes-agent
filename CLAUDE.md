@@ -6,8 +6,8 @@
 - **User**: `administrator` (UID 1000)
 - **Hermes**: v0.21.2 (code_sha `d595e636c83aa0b9606d4e914e1140ae9c796897`)
 - **Model router**: OpenRouter free + local Ollama (l1–l4, code-free, reasoning-free, gemma-free, auto-free)
-- **Gateway**: `hermes-gateway.service` (PID 76175, running since 2026-09-12 22:50:25 UTC)
-- **Telegram**: bot token `8692191625:***`, allowed user `5900448653`, message 1500 delivered
+- **Gateway**: `hermes-gateway.service` is active and running; verify with `systemctl --user status hermes-gateway.service`
+- **Telegram**: bot token is stored in `~/.hermes/.env`; allowed user `5900448653`
 - **Ollama**: CPU-only (`OLLAMA_NUM_PARALLEL=1`, `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_GPU_LAYERS=0`)
 
 ## Verified Working ✅
@@ -16,13 +16,13 @@
 - **Toolsets enabled**: web, browser, terminal, file, code_execution, vision, stt, tts, computer_use, skills, todo, kanban, memory, context_engine, session_search, connections, clarify, delegation, cronjob, image_gen, video_gen
 - **Plugins enabled**: browser-browser-use, browser-browserbase, chronos, google_meet, disk-cleanup
 - **Skills**: gateway-optimization-plan, gateway-quick-start, ollama-performance-tuning, self-enhance, hermes-agent-skill-authoring, github, computer-use, hermes-model-config, model-router
-- **Git**: remote `https://github.com/adrianstanca1/hermes-agent.git`, commits `d8ce299`, `31a900f`, `af62c4c`
+- **Git**: remote `https://github.com/adrianstanca1/hermes-agent.git`
 
 ## Computer Use — Headless Xvfb Workaround ✅
 - **Xvfb service**: `xvfb.service` (systemd user unit, PID 73743, `:99`, 1920×1080, auto-restart on failure)
 - **Gateway env override**: `hermes-gateway.service.d/override.conf` injects `DISPLAY=:99`, `XDG_SESSION_TYPE=x11`, `XWAYLAND_DISPLAY=`
 - **Doctor**: `ax_capability` ✅, `screen_capture_capability` ✅
-- **Capture verified**: `computer_use_29908d3b416f4de28ba49fa46147ede0.png` (484×316, XTerm on `:99`)
+- **Capture verified**: a real `computer_use` screenshot was captured from XTerm on `:99` (484×316)
 - **Limitation**: headless Xvfb is for CI/automation only (per Cua docs). Full desktop requires SSH X11 forwarding or a graphical session.
 
 ## Remaining Blockers ⚠️
