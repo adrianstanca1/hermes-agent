@@ -19,7 +19,7 @@ database:
 runtime:
   nofile_soft_limit: 4096
 agent:
-  max_turns: 150
+  max_turns: 300
   service_tier: ''
   fast_auto_seconds: 60
   verbose: false
@@ -28,7 +28,7 @@ agent:
 terminal:
   backend: local
   cwd: .
-  timeout: 180
+  timeout: 3600
   home_mode: auto
   container_cpu: 1
   container_memory: 5120
@@ -57,9 +57,9 @@ compression:
   enabled: true
   checkpoint_required: false
   progress_notices: false
-  threshold: 0.5
-  target_ratio: 0.2
-  protect_last_n: 20
+  threshold: 0.4
+  target_ratio: 0.15
+  protect_last_n: 30
   min_tail_user_messages: 1
   max_attempts: 3
   proactive_prune_tokens: 0
@@ -106,24 +106,38 @@ delegation:
   provider: openrouter
   base_url: https://openrouter.ai/api/v1
   max_iterations: 250
-  max_concurrent_children: 4
+  max_concurrent_children: 5
 skills:
   creation_nudge_interval: 15
 approvals:
   destructive_slash_confirm: false
 command_allowlist:
+  - shell command via -c/-lc flag
+  - command parser limit or malformed executable payload
+  - overwrite project env/config file
+  - delete in root path
+  - stop/restart hermes gateway (kills running agents)
+  - hermes update (restarts gateway, kills running agents)
+  - overwrite system config
   - stop/restart system service
   - script execution via -e/-c flag
   - script execution via heredoc
   - overwrite system file via redirection
-  - delete in root path
+plugins:
+  enabled:
+    - browser/browser_use
+    - browser/browserbase
+    - cron_providers/chronos
+    - disk-cleanup
+    - google_meet
+  disabled: []
 cron:
   catch_up_missed: true
 kanban:
   review_dispatch: true
 code_execution:
-  timeout: 300
-  max_tool_calls: 50
+  timeout: 600
+  max_tool_calls: 100
 gateway:
   signal_interrupt_grace_timeout: 1
   delivery_ledger: true
@@ -160,7 +174,7 @@ gateway:
   api_server:
     max_concurrent_runs: 10
 streaming:
-  enabled: false
+  enabled: true
 onboarding:
   seen:
     tool_progress_prompt: true
@@ -174,6 +188,11 @@ updates:
   pre_update_backup: false
   backup_keep: 5
   non_interactive_local_changes: stash
+proxy:
+  enabled: true
+  tunnel_port: 9090
+  auto_install: true
+  credential_source: env
 _config_version: 44
 group_sessions_per_user: true
 platform_toolsets:
@@ -190,6 +209,7 @@ platform_toolsets:
     - cronjob
     - delegation
     - file
+    - google_meet
     - image_gen
     - kanban
     - memory
@@ -227,6 +247,7 @@ platform_toolsets:
 known_plugin_toolsets:
   cli:
     - a2a
+    - google_meet
     - spotify
 known_builtin_toolsets:
   cli:
@@ -243,6 +264,7 @@ known_builtin_toolsets:
     - file
     - homeassistant
     - image_gen
+    - kanban
     - memory
     - session_search
     - skills
@@ -269,3 +291,19 @@ platforms:
       chat_id: '5900448653'
       name: Xulesxu Adrian
       user_id: '5900448653'
+
+# ── Security ──────────────────────────────────────────────────────────
+# Secret redaction is ON by default — strings that look like API keys,
+# tokens, and passwords are masked in tool output, logs, and chat
+# responses before the model or user ever sees them. Set redact_secrets
+# to false to disable (e.g. when developing the redactor itself).
+# tirith pre-exec scanning is enabled by default when the tirith binary
+# is available. Configure via security.tirith_* keys or env vars
+# (TIRITH_ENABLED, TIRITH_BIN, TIRITH_TIMEOUT, TIRITH_FAIL_OPEN).
+#
+# security:
+#   redact_secrets: true
+#   tirith_enabled: true
+#   tirith_path: "tirith"
+#   tirith_timeout: 5
+#   tirith_fail_open: true
