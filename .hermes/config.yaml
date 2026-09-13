@@ -44,15 +44,15 @@ browser:
 tool_loop_guardrails:
   warnings_enabled: true
   hard_stop_enabled: false
-  non_interactive_hard_stop_enabled: true
+  non_interactive_hard_stop_enabled: false
   warn_after:
-    exact_failure: 2
-    same_tool_failure: 3
-    idempotent_no_progress: 2
+    exact_failure: 10
+    same_tool_failure: 10
+    idempotent_no_progress: 10
   hard_stop_after:
-    exact_failure: 5
-    same_tool_failure: 8
-    idempotent_no_progress: 5
+    exact_failure: 15
+    same_tool_failure: 15
+    idempotent_no_progress: 15
 compression:
   enabled: true
   checkpoint_required: false
@@ -110,29 +110,60 @@ delegation:
 skills:
   creation_nudge_interval: 15
 approvals:
+  mode: 'off'
   destructive_slash_confirm: false
 command_allowlist:
-  - shell command via -c/-lc flag
-  - command parser limit or malformed executable payload
-  - overwrite project env/config file
-  - delete in root path
-  - stop/restart hermes gateway (kills running agents)
-  - hermes update (restarts gateway, kills running agents)
-  - overwrite system config
-  - stop/restart system service
-  - script execution via -e/-c flag
-  - script execution via heredoc
-  - overwrite system file via redirection
+- shell command via -c/-lc flag
+- command parser limit or malformed executable payload
+- overwrite project env/config file
+- delete in root path
+- stop/restart hermes gateway (kills running agents)
+- hermes update (restarts gateway, kills running agents)
+- overwrite system config
+- stop/restart system service
+- script execution via -e/-c flag
+- script execution via heredoc
+- overwrite system file via redirection
 plugins:
   enabled:
-    - browser/browser_use
-    - browser/browserbase
-    - cron_providers/chronos
-    - disk-cleanup
-    - google_meet
+  - a2a
+  - browser/browser_use
+  - browser/browserbase
+  - clarify
+  - code_execution
+  - computer_use
+  - connections
+  - context_engine
+  - cron_providers/chronos
+  - cronjob
+  - dashboard_auth/basic
+  - delegation
+  - discord
+  - discord_admin
+  - disk-cleanup
+  - file
+  - google_meet
+  - homeassistant
+  - image_gen
+  - kanban
+  - memory
+  - session_search
+  - skills
+  - stt
+  - terminal
+  - todo
+  - tts
+  - video
+  - video_gen
+  - vision
+  - web
+  - web/brave_free
+  - x_search
+  - yuanbao
   disabled: []
 cron:
   catch_up_missed: true
+  provider: chronos
 kanban:
   review_dispatch: true
 code_execution:
@@ -197,88 +228,116 @@ _config_version: 44
 group_sessions_per_user: true
 platform_toolsets:
   cli:
-    - a2a
-    - browser
-    - clarify
-    - claude-code
-    - code_execution
-    - codex
-    - computer_use
-    - connections
-    - context_engine
-    - cronjob
-    - delegation
-    - file
-    - google_meet
-    - image_gen
-    - kanban
-    - memory
-    - opencode
-    - session_search
-    - skills
-    - stt
-    - terminal
-    - todo
-    - tts
-    - video
-    - video_gen
-    - vision
-    - web
+  - a2a
+  - browser
+  - clarify
+  - claude-code
+  - code_execution
+  - codex
+  - computer_use
+  - connections
+  - context_engine
+  - cronjob
+  - delegation
+  - file
+  - google_meet
+  - image_gen
+  - kanban
+  - memory
+  - opencode
+  - session_search
+  - skills
+  - stt
+  - terminal
+  - todo
+  - tts
+  - video
+  - video_gen
+  - vision
+  - web
   telegram:
-    - hermes-telegram
+  - a2a
+  - browser
+  - clarify
+  - code_execution
+  - computer_use
+  - connections
+  - context_engine
+  - cron_providers/chronos
+  - cronjob
+  - delegation
+  - file
+  - google_meet
+  - homeassistant
+  - image_gen
+  - kanban
+  - memory
+  - session_search
+  - skills
+  - spotify
+  - stt
+  - terminal
+  - todo
+  - tts
+  - video
+  - video_gen
+  - vision
+  - web
+  - x_search
+  - yuanbao
   discord:
-    - hermes-discord
+  - hermes-discord
   whatsapp:
-    - hermes-whatsapp
+  - hermes-whatsapp
   slack:
-    - hermes-slack
+  - hermes-slack
   signal:
-    - hermes-signal
+  - hermes-signal
   homeassistant:
-    - hermes-homeassistant
+  - hermes-homeassistant
   qqbot:
-    - hermes-qqbot
+  - hermes-qqbot
   yuanbao:
-    - hermes-yuanbao
+  - hermes-yuanbao
   teams:
-    - hermes-teams
+  - hermes-teams
   google_chat:
-    - hermes-google_chat
+  - hermes-google_chat
 known_plugin_toolsets:
   cli:
-    - a2a
-    - google_meet
-    - spotify
+  - a2a
+  - google_meet
+  - spotify
 known_builtin_toolsets:
   cli:
-    - browser
-    - clarify
-    - code_execution
-    - computer_use
-    - connections
-    - context_engine
-    - cronjob
-    - delegation
-    - discord
-    - discord_admin
-    - file
-    - homeassistant
-    - image_gen
-    - kanban
-    - memory
-    - session_search
-    - skills
-    - spotify
-    - stt
-    - terminal
-    - todo
-    - tts
-    - video
-    - video_gen
-    - vision
-    - web
-    - x_search
-    - yuanbao
+  - browser
+  - clarify
+  - code_execution
+  - computer_use
+  - connections
+  - context_engine
+  - cronjob
+  - delegation
+  - discord
+  - discord_admin
+  - file
+  - homeassistant
+  - image_gen
+  - kanban
+  - memory
+  - session_search
+  - skills
+  - spotify
+  - stt
+  - terminal
+  - todo
+  - tts
+  - video
+  - video_gen
+  - vision
+  - web
+  - x_search
+  - yuanbao
 fallback_model:
   provider: openrouter
   model: anthropic/claude-sonnet-4
@@ -291,19 +350,29 @@ platforms:
       chat_id: '5900448653'
       name: Xulesxu Adrian
       user_id: '5900448653'
-
-# ── Security ──────────────────────────────────────────────────────────
-# Secret redaction is ON by default — strings that look like API keys,
-# tokens, and passwords are masked in tool output, logs, and chat
-# responses before the model or user ever sees them. Set redact_secrets
-# to false to disable (e.g. when developing the redactor itself).
-# tirith pre-exec scanning is enabled by default when the tirith binary
-# is available. Configure via security.tirith_* keys or env vars
-# (TIRITH_ENABLED, TIRITH_BIN, TIRITH_TIMEOUT, TIRITH_FAIL_OPEN).
-#
-# security:
-#   redact_secrets: true
-#   tirith_enabled: true
-#   tirith_path: "tirith"
-#   tirith_timeout: 5
-#   tirith_fail_open: true
+mcp_servers:
+  notion:
+    url: https://mcp.notion.com/mcp
+    auth: oauth
+    enabled: true
+  linear:
+    url: https://mcp.linear.app/mcp
+    auth: oauth
+    enabled: true
+  github:
+    command: npx
+    args:
+    - -y
+    - --args
+    - '@modelcontextprotocol/server-github'
+    - --env
+    - GITHUB_PERSONAL_ACCESS_TOKEN=git_protocol:https
+    - --connect-timeout
+    - '30'
+    enabled: true
+  expo:
+    url: https://mcp.expo.dev/mcp
+    auth: header
+    enabled: true
+    headers:
+      Authorization: Bearer iyZLUgN5jsMe3-FdKoqeBm07UgiQH32iMd3obSi7
